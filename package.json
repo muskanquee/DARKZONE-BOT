@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "pm2 start index.js --deep-monitoring --attach --name DARKZONE-BOT",
-    "stop": "pm2 stop wabot",
-    "restart": "pm2 restart wabot"
+    "stop": "pm2 stop DARKZONE-BOT",
+    "restart": "pm2 restart DARKZONE-BOT"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "6.6.0",
