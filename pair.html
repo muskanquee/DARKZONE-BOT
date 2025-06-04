@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PAIR CODE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .box {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 350px;
+      width: 100%;
+      text-align: center;
+      animation: fadeIn 1s ease;
+    }
+
+    .box h3 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .box h6 {
+      font-weight: 400;
+      color: #ccc;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-container {
+      display: flex;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .input-container input {
+      flex: 1;
+      border: none;
+      padding: 0.9rem;
+      background: transparent;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .input-container button {
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 0.9rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .input-container button:hover {
+      background: #1ebc57;
+    }
+
+    #pair {
+      margin-top: 1rem;
+      font-size: 1rem;
+    }
+
+    #copy {
+      cursor: pointer;
+      color: #f76c6c;
+    }
+
+    #loading-spinner {
+      margin-top: 1rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 500px) {
+      .input-container {
+        flex-direction: column;
+      }
+
+      .input-container input, .input-container button {
+        width: 100%;
+        border-radius: 0;
+      }
+
+      .input-container button {
+        border-top: 1px solid rgba(255,255,255,0.1);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="box" id="box">
+      <i class="fa fa-user fa-2x"></i>
+      <h3>Link with phone number</h3>
+      <h6>🔢 Enter your number with country code.</h6>
+      <div class="input-container">
+        <input type="number" id="number" placeholder="+94729xxxxxx"/>
+        <button id="submit">Submit</button>
+      </div>
+      <div id="loading-spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <main id="pair"></main>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+  <script>
+    let a = document.getElementById("pair");
+    let b = document.getElementById("submit");
+    let c = document.getElementById("number");
+
+    document.getElementById("loading-spinner").style.display = "none";
+
+    async function Copy() {
+      let text = document.getElementById("copy").innerText;
+      let obj = document.getElementById("copy");
+      await navigator.clipboard.writeText(obj.innerText.replace('CODE: ', ''));
+      obj.innerText = "✔️ COPIED";
+      obj.style.color = "lime";
+      setTimeout(() => {
+        obj.innerText = text;
+        obj.style.color = "#f76c6c";
+      }, 800);
+    }
+
+    b.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!c.value) {
+        a.innerHTML = '<p style="color:#f76c6c;">❗Enter your WhatsApp number with country code.</p>';
+        return;
+      } else if (c.value.replace(/[^0-9]/g, "").length < 11) {
+        a.innerHTML = '<p style="color:#f76c6c;">❗Invalid number format. Please try again.</p>';
+        return;
+      }
+
+      const bc = c.value.replace(/[^0-9]/g, "");
+      let bb = "";
+      let bbc = "";
+      const cc = bc.split('');
+      cc.map(a => {
+        bbc += a;
+        if (bbc.length == 3) bb += " " + a;
+        else if (bbc.length == 8) bb += " " + a;
+        else bb += a;
+      });
+      c.type = "text";
+      c.value = "+" + bb;
+      c.style = "color:white;font-size:20px";
+
+      document.getElementById("loading-spinner").style.display = "block";
+      a.innerHTML = '';
+
+      try {
+        let { data } = await axios(`/code?number=${bc}`);
+        let code = data.code || "❗ Service Unavailable";
+        a.innerHTML = `<p id="copy" onclick="Copy()">CODE: <span style="color:#fff;">${code}</span></p>`;
+      } catch (err) {
+        a.innerHTML = '<p style="color:#f76c6c;">❗ Failed to fetch code.</p>';
+      } finally {
+        document.getElementById("loading-spinner").style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
